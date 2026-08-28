@@ -1,0 +1,26 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://crimson-ledger.invalid/contracts/static-mirror-export.v1.json",
+  "title": "Sanitized Static Operations Mirror V1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schemaVersion", "snapshotAvailable", "generatedAt", "provenance", "tasks", "pipelineRuns", "auditSummary"],
+  "properties": {
+    "schemaVersion": { "const": "StaticOperationsMirrorV1" },
+    "snapshotAvailable": { "type": "boolean" },
+    "generatedAt": { "type": "string", "format": "date-time" },
+    "provenance": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["source", "exportKind", "detail"],
+      "properties": {
+        "source": { "const": "public-pages-mirror" },
+        "exportKind": { "const": "empty-safe-placeholder" },
+        "detail": { "type": "string" }
+      }
+    },
+    "tasks": { "type": "array", "items": { "type": "object" } },
+    "pipelineRuns": { "type": "array", "items": { "type": "object" } },
+    "auditSummary": { "type": "array", "items": { "type": "object" } }
+  }
+}

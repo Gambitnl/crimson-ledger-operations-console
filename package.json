@@ -1,0 +1,13 @@
+{
+  "name": "crimson-ledger-operations-console-pages-mirror",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "engines": { "node": ">=20" },
+  "scripts": {
+    "test": "node --test tests/*.test.mjs",
+    "export:empty": "node scripts/build-pages.mjs --empty",
+    "validate:public": "node scripts/validate-public.mjs",
+    "verify": "npm test && npm run validate:public && npm run export:empty && npm run validate:public -- --artifact"
+  }
+}

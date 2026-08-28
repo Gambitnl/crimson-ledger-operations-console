@@ -1,0 +1,10 @@
+data/
+pages-dist/
+*.tmp
+*.log
+node_modules/
+.playwright-cli/
+output/
+# The complete hosted source is maintained in the separate private source repo.
+hosted-site/
+docs/hosted-site-full-source-manifest.json
