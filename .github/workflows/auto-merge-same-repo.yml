@@ -1,0 +1,43 @@
+name: Auto-merge verified same-repository pull requests
+
+on:
+  workflow_run:
+    workflows: ["Build and publish sanitized Operations Console mirror"]
+    types: [completed]
+
+permissions:
+  contents: read
+
+jobs:
+  merge_verified_same_repo_pr:
+    if: >-
+      github.event.workflow_run.conclusion == 'success' &&
+      github.event.workflow_run.event == 'pull_request' &&
+      github.event.workflow_run.head_repository.full_name == github.repository
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+      actions: write
+    steps:
+      - name: Merge the tested PR and deploy Pages
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPOSITORY: ${{ github.repository }}
+          REPOSITORY_OWNER: ${{ github.repository_owner }}
+          HEAD_BRANCH: ${{ github.event.workflow_run.head_branch }}
+          HEAD_SHA: ${{ github.event.workflow_run.head_sha }}
+        run: |
+          set -euo pipefail
+          pulls="$(gh api --method GET "/repos/${REPOSITORY}/pulls" -f state=open -f base=main -f head="${REPOSITORY_OWNER}:${HEAD_BRANCH}")"
+          pr_number="$(printf '%s' "$pulls" | jq -r --arg repo "$REPOSITORY" --arg head_sha "$HEAD_SHA" '[.[] | select(.draft == false and .state == "open" and .base.ref == "main" and .head.repo.full_name == $repo and .head.sha == $head_sha)] | if length == 1 then .[0].number else empty end')"
+          if [ -z "$pr_number" ]; then
+            echo "No single ready PR matches the verified same-repository commit; skipping."
+            exit 0
+          fi
+          merge_response="$(gh api --method PUT "/repos/${REPOSITORY}/pulls/${pr_number}/merge" -f merge_method=squash)"
+          if [ "$(printf '%s' "$merge_response" | jq -r '.merged')" != "true" ]; then
+            echo "GitHub did not merge PR #${pr_number}."
+            exit 1
+          fi
+          gh workflow run pages.yml --ref main
