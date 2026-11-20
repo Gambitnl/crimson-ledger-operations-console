@@ -35,9 +35,5 @@ jobs:
             echo "No single ready PR matches the verified same-repository commit; skipping."
             exit 0
           fi
-          merge_response="$(gh api --method PUT "/repos/${REPOSITORY}/pulls/${pr_number}/merge" -f merge_method=squash)"
-          if [ "$(printf '%s' "$merge_response" | jq -r '.merged')" != "true" ]; then
-            echo "GitHub did not merge PR #${pr_number}."
-            exit 1
-          fi
-          gh workflow run pages.yml --ref main
+          gh pr merge "$pr_number" --repo "$REPOSITORY" --squash
+          gh workflow run pages.yml --repo "$REPOSITORY" --ref main
